@@ -1,11 +1,65 @@
-<div align="center">
+# Generador de matriz de requisitos de importación (Access2Markets)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Script para extraer, por subpartida UE, los requisitos de importación desde un origen (por defecto Colombia `CO`) a un destino (por defecto Francia `FR`) usando los endpoints públicos de Access2Markets.
 
-  <h1>Built with AI Studio</h2>
+## Archivos
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- `scrape_requisitos_ue.py`: scraping y generación de matriz/detalle en CSV.
+- `subpartidas_ue.csv`: listado de 34 subpartidas UE (columna `subpartida_ue`).
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## Requisitos
 
-</div>
+```bash
+pip install playwright
+playwright install chromium
+```
+
+## Uso
+
+### 1) Matriz resumida (rápida)
+
+```bash
+python scrape_requisitos_ue.py \
+  --input subpartidas_ue.csv \
+  --output matriz_requisitos.csv \
+  --details requisitos_detalle.csv
+```
+
+### 2) Incluyendo detalle textual de cada requisito (más lento)
+
+```bash
+python scrape_requisitos_ue.py \
+  --input subpartidas_ue.csv \
+  --output matriz_requisitos.csv \
+  --details requisitos_detalle.csv \
+  --include-content
+```
+
+## Estructura de salida
+
+### `matriz_requisitos.csv`
+
+- `subpartida_ue`
+- `origen`
+- `destino`
+- `requisitos_generales_count`
+- `requisitos_especificos_count`
+- `requisitos_generales` (concatenado con ` | `)
+- `requisitos_especificos` (concatenado con ` | `)
+
+### `requisitos_detalle.csv`
+
+Una fila por requisito detectado:
+
+- `subpartida_ue`, `origen`, `destino`
+- `tipo` (`general`/`especifico`)
+- `codigo_requisito`
+- `etiqueta`
+- `titulo`
+- `detalle_texto` (si usas `--include-content`)
+
+## Notas
+
+- Fuente: `https://trade.ec.europa.eu/access-to-markets/`
+- Endpoint principal usado por subpartida:
+  - `/api/v2/document/list?destinationCountry=FR&originCountry=CO&product=<subpartida>&lang=EN`
